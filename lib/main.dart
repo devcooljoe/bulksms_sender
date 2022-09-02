@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 
 Future<void> main() async {
-  await GetStorage.init();
-  runApp(BulkSMS());
+  GetStorage.init().then(
+    (bool _) => runApp(const BulkSMS()),
+  );
 }
 
 class BulkSMS extends StatelessWidget {
-  BulkSMS({Key? key}) : super(key: key);
+  const BulkSMS({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {

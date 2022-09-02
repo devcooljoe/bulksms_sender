@@ -1,5 +1,7 @@
 import 'dart:convert';
 
+import 'package:bulksms/models/response.dart';
+import 'package:bulksms/welcome.dart';
 import 'package:flutter/material.dart';
 import 'package:get_storage/get_storage.dart';
 import 'package:http/http.dart';
@@ -30,118 +32,156 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.purple,
-        title: const Text('BulkSMS Sender'),
-        actions: [
-          Row(
-            children: [
-              const Text('Balance: ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              FutureBuilder(
-                future: getBalance(),
-                builder: (context, snapshot) {
-                  var data = jsonDecode(snapshot.data.toString());
-                  return snapshot.hasData == true ? Text("N${data['balance']['total_balance']}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)) : const Text('Loading...');
-                },
-              ),
-              const SizedBox(width: 10),
-            ],
-          )
-        ],
-      ),
-      body: ListView(
-        physics: const BouncingScrollPhysics(),
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        shrinkWrap: true,
-        children: [
-          const SizedBox(height: 50),
-          const Text(
-            "Welcome to BulkSMS Sender",
-            style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
-            textAlign: TextAlign.center,
-          ),
-          const SizedBox(height: 20),
-          const Text('Sender Name (Required)', style: TextStyle(fontStyle: FontStyle.italic)),
-          const SizedBox(height: 5),
-          TextField(
-            maxLength: 20,
-            controller: _from,
-            decoration: const InputDecoration(
-              hintText: "Enter sender name here...",
-              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey, width: 2),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.purple, width: 2),
+      resizeToAvoidBottomInset: true,
+      body: Scaffold(
+        appBar: AppBar(
+          backgroundColor: Colors.purple,
+          title: const Text('BulkSMS Sender'),
+          actions: [
+            Row(
+              children: [
+                const Text('Balance: ', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
+                FutureBuilder(
+                  future: getBalance(),
+                  builder: (context, snapshot) {
+                    var data = jsonDecode(snapshot.data.toString());
+                    return snapshot.hasData == true ? Text("N${data['balance']['total_balance']}", style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)) : const Text('Loading...');
+                  },
+                ),
+                const SizedBox(width: 10),
+              ],
+            )
+          ],
+        ),
+        body: ListView(
+          physics: const BouncingScrollPhysics(),
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          shrinkWrap: true,
+          children: [
+            const SizedBox(height: 50),
+            const Text(
+              "Welcome to BulkSMS Sender",
+              style: TextStyle(fontSize: 25, fontWeight: FontWeight.bold),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 20),
+            const Text('Sender Name (Required)', style: TextStyle(fontStyle: FontStyle.italic)),
+            const SizedBox(height: 5),
+            TextField(
+              maxLength: 20,
+              controller: _from,
+              decoration: const InputDecoration(
+                hintText: "Enter sender name here...",
+                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.purple, width: 2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 10),
-          const Text('Text Message (Required)', style: TextStyle(fontStyle: FontStyle.italic)),
-          const SizedBox(height: 5),
-          TextField(
-            maxLength: 160,
-            maxLines: 10,
-            controller: _message,
-            decoration: const InputDecoration(
-              hintText: "Enter message here...",
-              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey, width: 2),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.purple, width: 2),
-              ),
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text('Comma separated phone numbers (Required)', style: TextStyle(fontStyle: FontStyle.italic)),
-          const SizedBox(height: 5),
-          TextField(
-            maxLines: 5,
-            controller: _phones,
-            decoration: const InputDecoration(
-              hintText: "Enter comma separated phone numbers here...",
-              contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
-              border: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.grey, width: 2),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.purple, width: 2),
+            const SizedBox(height: 10),
+            const Text('Text Message (Required)', style: TextStyle(fontStyle: FontStyle.italic)),
+            const SizedBox(height: 5),
+            TextField(
+              maxLength: 160,
+              maxLines: 10,
+              controller: _message,
+              decoration: const InputDecoration(
+                hintText: "Enter message here...",
+                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.purple, width: 2),
+                ),
               ),
             ),
-          ),
-          const SizedBox(height: 20),
-          ElevatedButton(
-            style: ButtonStyle(
-              backgroundColor: MaterialStateProperty.all(Colors.purple),
-            ),
-            onPressed: () {
-              sendMessage();
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(10),
-              child: Center(
-                child: widget._loading
-                    ? const SizedBox(
-                        height: 25.0,
-                        width: 25.0,
-                        child: CircularProgressIndicator(color: Colors.white),
-                      )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: const <Widget>[
-                          Icon(Icons.send),
-                          SizedBox(width: 10),
-                          Text('Send Message'),
-                        ],
-                      ),
+            const SizedBox(height: 10),
+            const Text('Comma separated phone numbers (Required)', style: TextStyle(fontStyle: FontStyle.italic)),
+            const SizedBox(height: 5),
+            TextField(
+              maxLines: 5,
+              controller: _phones,
+              decoration: const InputDecoration(
+                hintText: "Enter comma separated phone numbers here...",
+                contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                border: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.grey, width: 2),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.purple, width: 2),
+                ),
               ),
             ),
-          ),
-        ],
+            const SizedBox(height: 1000),
+            ElevatedButton(
+              style: ButtonStyle(
+                backgroundColor: MaterialStateProperty.all(Colors.red),
+              ),
+              onPressed: () {
+                box.erase();
+                Navigator.pushReplacement(
+                  context,
+                  MaterialPageRoute(builder: (BuildContext context) {
+                    return const WelcomeScreen();
+                  }),
+                );
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(10),
+                child: Center(
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: const <Widget>[
+                      Icon(Icons.delete),
+                      SizedBox(width: 10),
+                      Text('Delete API Key'),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 100),
+          ],
+        ),
+        bottomNavigationBar: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                style: ButtonStyle(
+                  backgroundColor: MaterialStateProperty.all(Colors.purple),
+                ),
+                onPressed: sendMessage,
+                child: Padding(
+                  padding: const EdgeInsets.all(10),
+                  child: Center(
+                    child: widget._loading
+                        ? const SizedBox(
+                            height: 25.0,
+                            width: 25.0,
+                            child: CircularProgressIndicator(color: Colors.white),
+                          )
+                        : Row(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            crossAxisAlignment: CrossAxisAlignment.center,
+                            children: const <Widget>[
+                              Icon(Icons.send),
+                              SizedBox(width: 10),
+                              Text('Send Message'),
+                            ],
+                          ),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -152,12 +192,9 @@ class _HomeScreenState extends State<HomeScreen> {
       setState(() {
         widget._loading = true;
       });
-      var response = await get(
-        Uri.parse(link),
-        headers: {
-          'Accept': 'application/json',
-        },
-      );
+      var response = await get(Uri.parse(link), headers: {'Accept': 'application/json'});
+
+      SmsReport smsReport = SmsReport.fromJson(jsonDecode(response.body));
       setState(() {
         widget._loading = false;
       });
@@ -168,7 +205,7 @@ class _HomeScreenState extends State<HomeScreen> {
               title: const Text('SMS Report'),
               content: Column(
                 children: [
-                  jsonDecode(response.body)['data']['status'] == 'success'
+                  smsReport.status == 'success'
                       ? const Icon(Icons.check_circle_outline_rounded, size: 100, color: Colors.green)
                       : const Icon(
                           Icons.error_outline_rounded,
@@ -176,9 +213,9 @@ class _HomeScreenState extends State<HomeScreen> {
                           color: Colors.red,
                         ),
                   const SizedBox(height: 50),
-                  Text("Status: ${jsonDecode(response.body)['data']['status']}"),
-                  Text("Message: ${jsonDecode(response.body)['data']['message']}"),
-                  Text("Cost: N${jsonDecode(response.body)['data']['cost']}"),
+                  Text("Status: ${smsReport.status}"),
+                  Text("Message: ${smsReport.message}"),
+                  Text("Cost: N${smsReport.cost}"),
                 ],
               ),
             );

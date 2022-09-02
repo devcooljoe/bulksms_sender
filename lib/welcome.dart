@@ -43,9 +43,7 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
               style: ButtonStyle(
                 backgroundColor: MaterialStateProperty.all(Colors.purple),
               ),
-              onPressed: () {
-                saveApiToken();
-              },
+              onPressed: saveApiToken,
               child: Padding(
                 padding: const EdgeInsets.all(10),
                 child: Center(
